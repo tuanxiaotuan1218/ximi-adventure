@@ -1,0 +1,26 @@
+{
+  "name": "西米的冒险世界",
+  "short_name": "冒险世界",
+  "description": "神奇宝贝主题的儿童学习打卡应用，让学习像冒险一样有趣！",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FDF6EC",
+  "theme_color": "#D08050",
+  "lang": "zh-CN",
+  "categories": ["education", "kids"],
+  "icons": [
+    {
+      "src": "icons/icon-192x192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512x512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
