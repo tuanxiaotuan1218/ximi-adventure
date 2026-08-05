@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ximi-adventure-v1';
+const CACHE_NAME = 'ximi-adventure-v1785894426839';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -14,10 +14,11 @@ self.addEventListener('install', (event) => {
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
+  // 跳过等待，立即激活新SW
   self.skipWaiting();
 });
 
-// 激活：清理旧缓存
+// 激活：清理旧缓存，立即接管所有客户端
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -30,30 +31,14 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// 请求拦截：缓存优先，网络回退
+// 请求拦截：网络优先，缓存回退（确保每次拿到最新版）
 self.addEventListener('fetch', (event) => {
-  // 只处理同源GET请求
   if (event.request.method !== 'GET') return;
   
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // 缓存命中，同时后台更新缓存
-        const fetchPromise = fetch(event.request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const clonedResponse = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, clonedResponse);
-            });
-          }
-          return networkResponse;
-        }).catch(() => cachedResponse);
-        
-        return cachedResponse;
-      }
-      
-      // 缓存未命中，走网络
-      return fetch(event.request).then((networkResponse) => {
+  // HTML文档请求：网络优先（确保版本更新能及时生效）
+  if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+    event.respondWith(
+      fetch(event.request).then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
           const clonedResponse = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -61,12 +46,30 @@ self.addEventListener('fetch', (event) => {
           });
         }
         return networkResponse;
-      });
-    }).catch(() => {
-      // 网络也失败，返回离线提示
-      if (event.request.destination === 'document') {
+      }).catch(() => {
+        // 网络失败，用缓存
         return caches.match('./index.html');
-      }
+      })
+    );
+    return;
+  }
+  
+  // 其他资源：缓存优先，后台更新（Stale-While-Revalidate）
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      // 后台更新
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const clonedResponse = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, clonedResponse);
+          });
+        }
+        return networkResponse;
+      }).catch(() => cachedResponse);
+      
+      // 有缓存先返回缓存，无缓存走网络
+      return cachedResponse || fetchPromise;
     })
   );
 });
