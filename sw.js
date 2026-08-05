@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ximi-adventure-v1785899861938';
+const CACHE_NAME = 'ximi-adventure-v1785900626011';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
