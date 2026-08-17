@@ -8,7 +8,10 @@
   "background_color": "#FDF6EC",
   "theme_color": "#D08050",
   "lang": "zh-CN",
-  "categories": ["education", "kids"],
+  "categories": [
+    "education",
+    "kids"
+  ],
   "icons": [
     {
       "src": "icons/icon-192x192.jpg",
